@@ -22,46 +22,60 @@ export const computeBalances = (people, expenses) => {
 export const computeSettlements = (people, expenses) => {
   const balances = computeBalances(people, expenses);
 
-  // Build mutable arrays of creditors and debtors
-  const creditors = []; // { id, name, amount }
-  const debtors = [];   // { id, name, amount }
+  // Build name lookup
+  const nameOf = {};
+  people.forEach((p) => (nameOf[p.id] = p.name));
 
-  people.forEach((p) => {
-    const bal = balances[p.id];
-    if (bal > 0) creditors.push({ id: p.id, name: p.name, amount: bal });
-    else if (bal < 0) debtors.push({ id: p.id, name: p.name, amount: -bal });
-  });
+  // Filter to non-zero balances only
+  const nonZero = people
+    .map((p) => ({ id: p.id, amount: balances[p.id] }))
+    .filter((p) => p.amount !== 0);
 
-  const transactions = [];
+  if (nonZero.length === 0) return [];
 
-  // Greedy: always match largest debtor to largest creditor
-  creditors.sort((a, b) => b.amount - a.amount);
-  debtors.sort((a, b) => b.amount - a.amount);
+  // Recursive optimal solver — finds true minimum number of transactions.
+  // Greedy (sort + match) fails on cases like [-6, -3, 4, 5] where it
+  // produces 3 transactions but the optimal is 2.
+  // Group sizes are small in practice so recursion is fast enough.
+  let best = [];
 
-  let ci = 0;
-  let di = 0;
-
-  while (ci < creditors.length && di < debtors.length) {
-    const credit = creditors[ci];
-    const debt = debtors[di];
-    const amount = Math.min(credit.amount, debt.amount);
-
-    if (amount > 0) {
-      transactions.push({
-        from: debt.id,
-        fromName: debt.name,
-        to: credit.id,
-        toName: credit.name,
-        amount,
-      });
+  const solve = (balances, current) => {
+    const active = balances.filter((b) => b.amount !== 0);
+    if (active.length === 0) {
+      if (best.length === 0 || current.length < best.length) {
+        best = [...current];
+      }
+      return;
     }
 
-    credit.amount -= amount;
-    debt.amount -= amount;
+    // Prune: already as long as best, can't improve
+    if (best.length > 0 && current.length >= best.length - 1) return;
 
-    if (credit.amount === 0) ci++;
-    if (debt.amount === 0) di++;
-  }
+    // Pick first debtor and try settling against every creditor
+    const debtor = active.find((b) => b.amount < 0);
+    if (!debtor) return;
 
-  return transactions;
+    const creditors = active.filter((b) => b.amount > 0);
+    for (const creditor of creditors) {
+      const amount = Math.min(-debtor.amount, creditor.amount);
+      const next = balances.map((b) => {
+        if (b.id === debtor.id) return { ...b, amount: b.amount + amount };
+        if (b.id === creditor.id) return { ...b, amount: b.amount - amount };
+        return b;
+      });
+      solve(next, [
+        ...current,
+        {
+          from: debtor.id,
+          fromName: nameOf[debtor.id],
+          to: creditor.id,
+          toName: nameOf[creditor.id],
+          amount,
+        },
+      ]);
+    }
+  };
+
+  solve(nonZero, []);
+  return best;
 };
