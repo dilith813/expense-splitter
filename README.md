@@ -55,15 +55,9 @@ When a total doesn't divide evenly, we use the **largest remainder method** to d
 
 The sum of all split amounts always equals the exact total. The reconciliation check on the Balances screen confirms this — it shows "✓ Balances reconcile to zero" after every calculation.
 
-### Settle Up — Greedy minimum transactions algorithm
-The settle-up algorithm finds the minimum number of payments to zero all balances:
+### Settle Up — Optimal minimum-transactions algorithm
 
-1. Compute each person's net balance (total paid − total owed)
-2. Separate into creditors (positive balance) and debtors (negative balance)
-3. Sort both lists by amount descending
-4. Greedily match the largest debtor to the largest creditor, settle partially or fully, repeat
-
-This produces the minimum number of transactions for all practical group sizes and avoids listing every pairwise debt.
+The app computes settlements using a recursive search that finds the true minimum number of transactions needed to bring all balances to zero. At each step, it selects a debtor and tries settling them against each possible creditor, recursively exploring the resulting states and keeping the shortest valid solution. Zero-balance people are excluded, and an exact integer-cent representation ensures settlement amounts reconcile precisely. This approach is appropriate for the expected small group sizes; a larger-scale application could use additional memoization or state-compression optimizations.
 
 ### Split types — Equal and Percentage
 Chose percentage over exact-amount as the second split type. Percentage is more commonly useful for real trips (covering someone's share, unequal contributions by agreement) and exercises the rounding logic more interestingly. Exact-amount split could be added as a third type with minimal changes to `splitCalculator.js`.
@@ -97,7 +91,7 @@ All state is local to the browser. No authentication, no server, no database. Th
 
 Sum: 5,000 − 9,000 + 7,000 − 3,000 = **0 ✓**
 
-**Settle Up (2 transactions):**
+**Settle Up (3 transactions):**
 - Bob → Carol: Rs. 7,000
 - Bob → Alice: Rs. 2,000
 - Dave → Alice: Rs. 3,000
