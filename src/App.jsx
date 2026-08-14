@@ -15,7 +15,6 @@ export default function App() {
   const [showForm, setShowForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
 
-  // People handlers
   const addPerson = (name) => {
     setPeople((prev) => [...prev, { id: crypto.randomUUID(), name }]);
   };
@@ -31,7 +30,6 @@ export default function App() {
     setPeople((prev) => prev.filter((p) => p.id !== id));
   };
 
-  // Expense handlers
   const saveExpense = (expense) => {
     setExpenses((prev) => {
       const exists = prev.find((e) => e.id === expense.id);
@@ -72,63 +70,57 @@ export default function App() {
       </header>
 
       <main className="app-main">
-        <PeopleManager people={people} onAdd={addPerson} onRemove={removePerson} />
+        <div className="layout">
+          {/* Left column — always visible */}
+          <aside className="left-col">
+            <PeopleManager people={people} onAdd={addPerson} onRemove={removePerson} />
+          </aside>
 
-        <nav className="tabs">
-          {TABS.map((tab) => (
-            <button
-              key={tab}
-              className={activeTab === tab ? 'tab active' : 'tab'}
-              onClick={() => { setActiveTab(tab); setShowForm(false); setEditingExpense(null); }}
-            >
-              {tab}
-              {tab === 'Settle Up' && expenses.length > 0 && (
-                <span className="tab-badge" />
-              )}
-            </button>
-          ))}
-        </nav>
-
-        {activeTab === 'Expenses' && (
-          <div>
-            {showForm || editingExpense ? (
-              <ExpenseForm
-                people={people}
-                onSave={saveExpense}
-                onCancel={cancelForm}
-                editingExpense={editingExpense}
-              />
-            ) : (
-              <div className="add-expense-bar">
+          {/* Right column — tabbed content */}
+          <div className="right-col">
+            <nav className="tabs">
+              {TABS.map((tab) => (
                 <button
-                  className="btn-primary btn-full"
-                  onClick={() => setShowForm(true)}
-                  disabled={!canAddExpense}
-                  title={!canAddExpense ? 'Add at least 2 people first' : ''}
+                  key={tab}
+                  className={activeTab === tab ? 'tab active' : 'tab'}
+                  onClick={() => { setActiveTab(tab); setShowForm(false); setEditingExpense(null); }}
                 >
-                  + Add Expense
+                  {tab}
+                  {tab === 'Settle Up' && expenses.length > 0 && <span className="tab-badge" />}
                 </button>
-                {!canAddExpense && (
-                  <p className="hint">Add at least 2 people to log an expense.</p>
+              ))}
+            </nav>
+
+            {activeTab === 'Expenses' && (
+              <div>
+                {showForm || editingExpense ? (
+                  <ExpenseForm
+                    people={people}
+                    onSave={saveExpense}
+                    onCancel={cancelForm}
+                    editingExpense={editingExpense}
+                  />
+                ) : (
+                  <div className="add-expense-bar">
+                    <button
+                      className="btn-primary btn-full"
+                      onClick={() => setShowForm(true)}
+                      disabled={!canAddExpense}
+                      title={!canAddExpense ? 'Add at least 2 people first' : ''}
+                    >
+                      + Add Expense
+                    </button>
+                    {!canAddExpense && <p className="hint">Add at least 2 people to log an expense.</p>}
+                  </div>
                 )}
+                <ExpenseList expenses={expenses} people={people} onEdit={startEdit} onDelete={deleteExpense} />
               </div>
             )}
-            <ExpenseList
-              expenses={expenses}
-              people={people}
-              onEdit={startEdit}
-              onDelete={deleteExpense}
-            />
+
+            {activeTab === 'Balances' && <BalancesView people={people} expenses={expenses} />}
+            {activeTab === 'Settle Up' && <SettleUpView people={people} expenses={expenses} />}
           </div>
-        )}
-
-        {activeTab === 'Balances' && (
-          <BalancesView people={people} expenses={expenses} />
-        )}
-
-        {activeTab === 'Settle Up' && (
-          <SettleUpView people={people} expenses={expenses} />
-        )}
+        </div>
       </main>
     </div>
   );
