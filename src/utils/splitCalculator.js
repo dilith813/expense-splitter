@@ -39,6 +39,9 @@ export const calculatePercentageSplit = (totalCents, splits) => {
 };
 
 export const validatePercentages = (splits) => {
+  // Every value must be strictly positive — rejects negatives like -10%
+  const allPositive = splits.every((s) => parseFloat(s.percentage || 0) > 0);
+  if (!allPositive) return false;
   const total = splits.reduce((sum, s) => sum + parseFloat(s.percentage || 0), 0);
   return Math.abs(total - 100) < 0.01; // allow tiny float imprecision
 };
