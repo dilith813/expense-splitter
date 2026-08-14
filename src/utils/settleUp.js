@@ -34,8 +34,6 @@ export const computeSettlements = (people, expenses) => {
   if (nonZero.length === 0) return [];
 
   // Recursive optimal solver — finds true minimum number of transactions.
-  // Greedy (sort + match) fails on cases like [-6, -3, 4, 5] where it
-  // produces 3 transactions but the optimal is 2.
   // Group sizes are small in practice so recursion is fast enough.
   let best = [];
 
