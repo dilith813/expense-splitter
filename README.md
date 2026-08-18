@@ -135,7 +135,7 @@ src/
   utils/
     currency.js           # Integer paise storage + LKR formatting
     splitCalculator.js    # Equal + percentage split with largest-remainder rounding
-    settleUp.js           # Balance computation + greedy settle-up algorithm
+    settleUp.js           # Balance computation
   App.jsx                 # Root — state, routing between tabs
   main.jsx                # Entry point
   index.css               # All styles
