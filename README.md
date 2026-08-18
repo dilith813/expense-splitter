@@ -106,7 +106,7 @@ Sum: 5,000 − 9,000 + 7,000 − 3,000 = **0 ✓**
 - **Expense categories** (food, transport, accommodation) with a breakdown view
 - **Multi-currency support** with a conversion layer, useful for international trips
 - **Undo delete** instead of a bare `confirm()` dialog
-- **Optimistic greedy vs. true minimum** — the greedy approach gives minimum transactions in practice but not always theoretically; a full optimal solver could be added for large groups
+- **Performance optimization for larger groups** — the current recursive search is appropriate for small groups but can become expensive as the number of participants grows. A future version could use memoization or state compression to improve scalability.
 
 ### UI improvements I'd make
 - Transition animations between tabs
