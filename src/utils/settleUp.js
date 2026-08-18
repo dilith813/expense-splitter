@@ -1,8 +1,3 @@
-// Greedy algorithm for minimum number of transactions to settle all debts
-// 1. Compute net balance per person (paid - owed)
-// 2. Split into creditors (+) and debtors (-)
-// 3. Match largest debtor to largest creditor repeatedly
-
 export const computeBalances = (people, expenses) => {
   const balances = {};
   people.forEach((p) => (balances[p.id] = 0));
